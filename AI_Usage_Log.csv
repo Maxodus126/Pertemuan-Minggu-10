@@ -1,0 +1,5 @@
+Minggu,Jenis Prompt,ChatGPT/Gemini,Tujuan,Ringkasan Output,Perubahan Manual,Validasi
+10,Prompt,ChatGPT,Membuat konsep Data Pipeline Builder,Penjelasan ingest-validate-transform-load pipeline_log pseudocode checklist,Disesuaikan dengan kebutuhan SC-DATA,Dicek terhadap deliverable minggu 10
+10,Super Prompt,ChatGPT,Membuat rancangan modul lengkap,Rancangan pipeline Streamlit DuckDB validasi transformasi load diagram laporan,Kode dan dataset dibuat manual,Diuji melalui app.py
+10,Metaprompt,ChatGPT,Memperbaiki prompt agar lebih kuat,Prompt diarahkan agar memuat input validasi transformasi load pipeline_log status rubrik,Prompt disederhanakan,Dicek terhadap checklist dosen
+10,Reverse Engineering Prompt,ChatGPT,Membuat checklist kualitas pipeline,Daftar komponen pipeline kelemahan risiko dan bukti nilai A,Checklist disesuaikan,Divalidasi dengan checklist_minggu10.csv

@@ -1,0 +1,9 @@
+Komponen,Ada/Tidak,Catatan
+6 CSV di folder data,Ada,mahasiswa dosen mata_kuliah krs nilai kehadiran
+Kode pipeline,Ada,app.py Streamlit + DuckDB
+Database .duckdb/PostgreSQL,Ada,sc_data_m10.duckdb terbuat otomatis
+pipeline_log,Ada,Terisi setelah pipeline dijalankan
+Screenshot upload dan status,Belum,Ambil screenshot setelah pipeline berjalan
+Diagram pipeline,Ada,Tersedia di dashboard
+Laporan 1-2 halaman,Ada,narasi_minggu10.md
+AI Usage Log,Ada,AI_Usage_Log.csv

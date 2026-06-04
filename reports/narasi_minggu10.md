@@ -1,0 +1,11 @@
+# Narasi Modul 10 — Data Pipeline Builder
+
+Modul 10 pada capstone SC-DATA berfokus pada pembangunan pipeline data akademik yang mencakup tahap upload, validasi, transformasi, dan load ke database DuckDB. Data yang digunakan adalah enam file CSV: `mahasiswa.csv`, `dosen.csv`, `mata_kuliah.csv`, `krs.csv`, `nilai.csv`, dan `kehadiran.csv`. Setiap file memiliki skema kolom wajib yang harus dipenuhi sebelum data dapat masuk ke sistem.
+
+Konsep utama yang diterapkan adalah alur pipeline empat tahap. Tahap pertama adalah ingest, yaitu membaca file CSV yang diunggah pengguna. Tahap kedua adalah validasi, yang memeriksa keberadaan kolom wajib, missing value, dan duplikat primary key. Jika ditemukan masalah kritis seperti kolom wajib tidak ada atau duplikat PK, pipeline memberikan status `failed`. Jika hanya ada missing value, status menjadi `warning` dan data tetap dapat diproses. Tahap ketiga adalah transformasi, yang mencakup strip whitespace, lowercase email, normalisasi status kehadiran, dan penghapusan baris duplikat. Tahap keempat adalah load, yaitu menyimpan data bersih ke tabel DuckDB.
+
+Setiap langkah dalam pipeline dicatat ke tabel `pipeline_log` yang menyimpan informasi filename, tahap, status, pesan, jumlah baris, dan timestamp. Log ini memungkinkan dosen dan pengembang untuk mengaudit proses pipeline secara menyeluruh.
+
+Aplikasi dibangun menggunakan Streamlit sebagai antarmuka dan DuckDB sebagai database lokal. Selain versi Streamlit, tersedia juga versi HTML standalone yang dapat dijalankan langsung di browser tanpa instalasi tambahan. Kedua versi memiliki fitur yang sama: upload file, eksekusi pipeline, tampilan status per file, tabel pipeline_log, preview tabel hasil, dan export log.
+
+Validasi dilakukan dengan memeriksa enam file dapat dibaca, validasi kolom berjalan untuk setiap file, data yang salah memunculkan warning atau error yang jelas, data valid berhasil masuk ke database, dan pipeline_log terisi secara otomatis setelah pipeline dijalankan. Dengan demikian, Modul 10 menjadi fondasi kualitas data untuk modul berikutnya yaitu Academic Document Search/RAG, karena hanya data yang telah divalidasi dan ditransformasi yang akan digunakan sebagai sumber pencarian.

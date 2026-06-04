@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SC-DATA | Data Pipeline Builder — Minggu 10</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g50:#F0FDF4;--g100:#DCFCE7;--g500:#22C55E;--g600:#16A34A;--g700:#15803D;--g800:#065F46;--g900:#064E3B;
+  --b50:#EFF6FF;--b100:#DBEAFE;--b500:#3B82F6;--b600:#2563EB;--b700:#1D4ED8;--b800:#1E40AF;
+  --a50:#FFFBEB;--a100:#FEF3C7;--a500:#F59E0B;--a700:#B45309;
+  --r50:#FFF1F2;--r100:#FFE4E6;--r500:#EF4444;--r700:#B91C1C;
+  --p100:#EDE9FE;--p700:#6D28D9;--k100:#FCE7F3;--k700:#9D174D;
+  --gray50:#F9FAFB;--gray100:#F3F4F6;--gray200:#E5E7EB;--gray300:#D1D5DB;
+  --gray500:#6B7280;--gray700:#374151;--gray900:#111827;
+  --sh:0 2px 12px rgba(0,0,0,.08);--shm:0 4px 24px rgba(0,0,0,.10);--shl:0 8px 40px rgba(0,0,0,.14);
+  --r:14px;--rl:20px;--fn:"Plus Jakarta Sans",sans-serif;--mo:"JetBrains Mono",monospace;
+}
+body{font-family:var(--fn);background:linear-gradient(135deg,#F0FDF4 0%,#EFF6FF 50%,#FFF7ED 100%);min-height:100vh;color:var(--gray900);font-size:14px;}
+.layout{display:grid;grid-template-columns:290px 1fr;min-height:100vh;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 40%,#065F46 100%);color:white;padding:1.5rem 1.25rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:.85rem;}
+.sb-logo{font-size:.63rem;font-weight:800;background:white;color:var(--g800);padding:3px 10px;border-radius:99px;letter-spacing:.07em;text-transform:uppercase;display:inline-block;}
+.sb-title{font-size:1rem;font-weight:700;margin-top:.35rem;}.sb-sub{font-size:.7rem;opacity:.6;margin-top:2px;}
+.sb-div{border:none;border-top:1px solid rgba(255,255,255,.1);}.sb-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.4;margin-bottom:.35rem;}
+.fslot{background:rgba(255,255,255,.07);border:1.5px dashed rgba(255,255,255,.2);border-radius:9px;padding:.55rem .8rem;margin-bottom:.4rem;cursor:pointer;transition:all .18s;position:relative;}
+.fslot:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4);}
+.fslot.loaded{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.5);border-style:solid;}
+.fslot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.fn-name{font-size:.76rem;font-weight:600;}.fn-st{font-size:.66rem;opacity:.55;margin-top:1px;}
+.fslot.loaded .fn-st{color:#4ADE80;opacity:1;}
+.uc{background:rgba(255,255,255,.1);border-radius:9px;padding:.6rem;text-align:center;font-size:.8rem;}
+.uc span{font-size:1.35rem;font-weight:800;display:block;}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:.65rem;border-radius:9px;border:none;cursor:pointer;font-family:var(--fn);font-size:.83rem;font-weight:700;transition:all .18s;}
+.btn-p{background:white;color:var(--g800);box-shadow:0 2px 10px rgba(0,0,0,.2);}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.28);}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-s{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+.btn-s:hover{background:rgba(255,255,255,.17);}
+.sb-stat{display:flex;justify-content:space-between;font-size:.76rem;padding:.18rem 0;}
+.sb-sv{font-weight:700;font-family:var(--mo);}
+.sb-note{margin-top:auto;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.7rem;font-size:.7rem;opacity:.62;line-height:1.5;}
+.main{padding:1.5rem 2rem;}
+.ph{background:linear-gradient(135deg,#065F46,#047857,#0369A1);color:white;border-radius:var(--rl);padding:1.4rem 2rem;margin-bottom:1.5rem;box-shadow:var(--shl);display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.ph-t{font-size:1.6rem;font-weight:800;letter-spacing:-.5px;}.ph-s{font-size:.83rem;opacity:.78;margin-top:4px;}
+.ph-b{display:inline-block;background:rgba(255,255,255,.15);padding:3px 12px;border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+#toast{position:fixed;top:1.5rem;right:1.5rem;z-index:9999;background:white;border-radius:var(--r);padding:.85rem 1.2rem;box-shadow:var(--shl);border-left:4px solid var(--g500);font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;transform:translateX(120%);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);min-width:220px;}
+#toast.show{transform:translateX(0);opacity:1;}#toast.err{border-left-color:var(--r500);}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+.mc{background:white;border-radius:var(--r);padding:1.1rem;text-align:center;box-shadow:var(--sh);border-top:4px solid var(--gray200);transition:transform .15s;}
+.mc:hover{transform:translateY(-2px);}
+.mc.ok{border-top-color:var(--g500);}.mc.wn{border-top-color:var(--a500);}.mc.fl{border-top-color:var(--r500);}.mc.in{border-top-color:var(--b500);}
+.mv{font-size:1.9rem;font-weight:800;line-height:1;}.ml{font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray500);margin-top:3px;}
+.mc.ok .mv{color:var(--g600);}.mc.wn .mv{color:var(--a700);}.mc.fl .mv{color:var(--r700);}.mc.in .mv{color:var(--b600);}
+.card{background:white;border-radius:var(--rl);box-shadow:var(--sh);margin-bottom:1.25rem;overflow:hidden;}
+.chdr{padding:.85rem 1.4rem;border-bottom:1px solid var(--gray100);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-size:.92rem;font-weight:700;color:var(--gray900);display:flex;align-items:center;gap:7px;}
+.cb{padding:1.25rem 1.4rem;}
+.cbadge{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 9px;border-radius:99px;}
+.cbg{background:var(--g100);color:var(--g700);}.cbb{background:var(--b100);color:var(--b700);}
+.fr{border:1px solid var(--gray200);border-radius:var(--r);margin-bottom:.65rem;overflow:hidden;}
+.frh{padding:.65rem 1.1rem;display:flex;align-items:center;gap:9px;cursor:pointer;background:var(--gray50);transition:background .15s;}
+.frh:hover{background:var(--gray100);}
+.frh.ok{background:var(--g50);}.frh.wn{background:var(--a50);}.frh.fl{background:var(--r50);}
+.frn{font-size:.86rem;font-weight:700;flex:1;}.frm{font-size:.73rem;color:var(--gray500);}
+.frbadge{font-size:.63rem;font-weight:700;padding:2px 9px;border-radius:99px;text-transform:uppercase;}
+.frbadge.ok{background:var(--g100);color:var(--g700);}.frbadge.wn{background:var(--a100);color:var(--a700);}.frbadge.fl{background:var(--r100);color:var(--r700);}
+.frb{padding:.9rem 1.1rem;display:none;}
+.frb.open{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem;}
+.tbl th{background:var(--gray50);padding:.58rem .85rem;text-align:left;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray500);border-bottom:1px solid var(--gray200);}
+.tbl td{padding:.52rem .85rem;border-bottom:1px solid var(--gray100);color:var(--gray700);}
+.tbl tr:last-child td{border-bottom:none;}.tbl tr:hover td{background:var(--gray50);}
+.mono{font-family:var(--mo);font-size:.74rem;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:.66rem;font-weight:700;text-transform:uppercase;}
+.bok{background:var(--g100);color:var(--g700);}.bwn{background:var(--a100);color:var(--a700);}.bfl{background:var(--r100);color:var(--r700);}.bin{background:var(--b100);color:var(--b700);}
+.pflow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:.6rem 0;}
+.pstep{padding:.5rem 1rem;border-radius:9px;font-size:.8rem;font-weight:700;}
+.parr{color:var(--gray300);font-size:1rem;}
+.concept-box{background:linear-gradient(135deg,var(--g50),var(--b50));border:1px solid var(--g100);border-left:4px solid var(--g500);border-radius:var(--r);padding:1rem 1.2rem;font-size:.83rem;color:var(--g900);line-height:1.62;margin-bottom:1.2rem;}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+.scard{background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--r);padding:.9rem;}
+.scard-t{font-size:.78rem;font-weight:700;color:var(--gray900);margin-bottom:.45rem;font-family:var(--mo);}
+.scol{font-size:.72rem;color:var(--gray500);padding:2px 0;}
+.cli{display:flex;align-items:center;gap:9px;padding:.45rem 0;border-bottom:1px solid var(--gray100);font-size:.83rem;}
+.cli:last-child{border-bottom:none;}.cl-l{flex:1;color:var(--gray700);}
+.cl-s{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:99px;}
+.clo{background:var(--g100);color:var(--g700);}.cln{background:var(--a100);color:var(--a700);}
+.es{text-align:center;padding:2.5rem 1.5rem;}.ei{font-size:3rem;opacity:.4;margin-bottom:.85rem;}
+.pfoot{text-align:center;padding:1.4rem 0 .6rem;border-top:1px solid var(--gray200);margin-top:1rem;font-size:.73rem;color:var(--gray500);}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{position:relative;height:auto;}.mgrid{grid-template-columns:repeat(2,1fr);}.sgrid{grid-template-columns:1fr 1fr;}}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fu .38s ease both;}
+</style>
+</head>
+<body>
+<div id="toast"><span id="ti">✅</span><span id="tm">—</span></div>
+<div class="layout">
+<aside class="sidebar">
+  <div><span class="sb-logo">SC-DATA</span><div class="sb-title">Pipeline Builder</div><div class="sb-sub">Modul 10 — Data Pipeline</div></div>
+  <hr class="sb-div">
+  <div><div class="sb-lbl">📂 Upload 6 File CSV</div><div id="fslots"></div></div>
+  <div class="uc"><span id="uc-num">0</span>dari 6 file terupload</div>
+  <hr class="sb-div">
+  <div style="display:flex;flex-direction:column;gap:7px;">
+    <button class="btn btn-p" id="run-btn" onclick="runPipeline()" disabled>▶️ Jalankan Pipeline</button>
+    <button class="btn btn-s" onclick="resetAll()">🗑️ Reset Semua</button>
+  </div>
+  <hr class="sb-div">
+  <div>
+    <div class="sb-lbl">📊 Statistik</div>
+    <div class="sb-stat"><span>pipeline_log</span><span class="sb-sv" id="sb-log">0</span></div>
+    <div class="sb-stat"><span>Tabel dimuat</span><span class="sb-sv" id="sb-tbl">0</span></div>
+    <div class="sb-stat"><span>Baris valid</span><span class="sb-sv" id="sb-rows">0</span></div>
+  </div>
+  <div class="sb-note"><b>💡 Alur:</b><br>Upload → Validasi kolom & missing value & duplikat PK → Transformasi → Load → pipeline_log</div>
+</aside>
+<main class="main">
+  <div class="ph fu">
+    <div><div class="ph-t">🔧 Data Pipeline Builder</div><div class="ph-s">SC-DATA Minggu 10 · Upload → Validasi → Transformasi → Load DuckDB (Simulasi)</div></div>
+    <div style="text-align:right;"><span class="ph-b">Modul 10 · SBDM Capstone</span></div>
+  </div>
+  <div class="mgrid" id="mgrid" style="display:none;">
+    <div class="mc ok"><div class="mv" id="m-ok">0</div><div class="ml">✅ Success</div></div>
+    <div class="mc wn"><div class="mv" id="m-wn">0</div><div class="ml">⚠️ Warning</div></div>
+    <div class="mc fl"><div class="mv" id="m-fl">0</div><div class="ml">❌ Failed</div></div>
+    <div class="mc in"><div class="mv" id="m-rw">0</div><div class="ml">📋 Baris Dimuat</div></div>
+  </div>
+  <div class="card fu" id="empty-card">
+    <div class="es"><div class="ei">⚙️</div>
+      <div style="font-size:1.05rem;font-weight:700;color:var(--gray700);">Pipeline Belum Dijalankan</div>
+      <div style="font-size:.83rem;color:var(--gray500);margin-top:.3rem;">Upload 6 file CSV di sidebar → klik <b>"Jalankan Pipeline"</b></div>
+    </div>
+    <div class="cb"><div style="font-size:.88rem;font-weight:700;margin-bottom:.9rem;">📋 Kolom Wajib Per File</div><div class="sgrid" id="schema-disp"></div></div>
+  </div>
+  <div id="res-section" style="display:none;">
+    <div class="card fu">
+      <div class="chdr"><div class="ct">📊 Status Pipeline Per File</div><span class="cbadge cbg" id="pipe-ts">—</span></div>
+      <div class="cb"><div id="file-res"></div></div>
+    </div>
+    <div class="card fu">
+      <div class="chdr"><div class="ct">🗃️ Tabel pipeline_log</div><span class="cbadge cbb" id="log-badge">0 record</span></div>
+      <div style="overflow-x:auto;max-height:270px;overflow-y:auto;">
+        <table class="tbl"><thead><tr><th>#</th><th>File</th><th>Tahap</th><th>Status</th><th>Pesan</th><th>Baris</th><th>Timestamp</th></tr></thead>
+        <tbody id="log-tbody"></tbody></table>
+      </div>
+      <div class="cb" style="padding-top:.6rem;">
+        <button onclick="exportLog()" style="background:var(--g600);color:white;padding:.52rem 1.1rem;border-radius:8px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;">⬇️ Download pipeline_log.csv</button>
+      </div>
+    </div>
+    <div class="card fu">
+      <div class="chdr"><div class="ct">🔍 Preview Data</div></div>
+      <div class="cb">
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:.9rem;" id="tbl-tabs"></div>
+        <div style="overflow-x:auto;max-height:260px;overflow-y:auto;">
+          <table class="tbl"><thead id="ph"></thead><tbody id="pb"></tbody></table>
+        </div>
+        <div id="pc" style="font-size:.73rem;color:var(--gray500);margin-top:.45rem;"></div>
+      </div>
+    </div>
+    <div class="card fu">
+      <div class="chdr"><div class="ct">📐 Diagram Pipeline</div></div>
+      <div class="cb">
+        <div class="pflow">
+          <div class="pstep" style="background:var(--b100);color:var(--b700);">📂 Upload CSV</div><div class="parr">→</div>
+          <div class="pstep" style="background:var(--g100);color:var(--g700);">🔍 Validasi</div><div class="parr">→</div>
+          <div class="pstep" style="background:var(--a100);color:var(--a700);">⚙️ Transformasi</div><div class="parr">→</div>
+          <div class="pstep" style="background:var(--p100);color:var(--p700);">💾 Load DB</div><div class="parr">→</div>
+          <div class="pstep" style="background:var(--k100);color:var(--k700);">📋 pipeline_log</div>
+        </div>
+        <div style="font-size:.8rem;color:var(--gray500);line-height:1.65;margin-top:.75rem;">
+          <b>Validasi:</b> kolom wajib, missing value, duplikat PK, baris kosong.<br>
+          <b>Transformasi:</b> strip whitespace, lowercase email, normalisasi status, hapus duplikat, konversi tipe data.
+        </div>
+      </div>
+    </div>
+    <div class="card fu">
+      <div class="chdr"><div class="ct">✅ Checklist Validasi Dosen</div></div>
+      <div class="cb" id="cl-body"></div>
+    </div>
+  </div>
+  <div class="concept-box fu">
+    <b>📖 Konsep Pipeline (Ingest → Validate → Transform → Load):</b><br>
+    Data akademik harus divalidasi sebelum masuk ke dashboard atau sistem AI. Pipeline memastikan kolom wajib ada,
+    missing value terdeteksi, duplikat dihapus, transformasi diterapkan, dan setiap tahap tercatat di <code>pipeline_log</code>.
+  </div>
+  <div class="pfoot">SC-DATA · Minggu 10 — Data Pipeline Builder · Dosen: Oni Bibin Bintoro / Ashari Abidin · ISTN</div>
+</main>
+</div>
+<script>
+const SCHEMA={
+  "mahasiswa.csv":{cols:["nim","nama","prodi","angkatan","email","status"],pk:"nim"},
+  "dosen.csv":{cols:["nip","nama","prodi","email","jabatan"],pk:"nip"},
+  "mata_kuliah.csv":{cols:["kode_mk","nama_mk","sks","semester","prodi","nip_dosen"],pk:"kode_mk"},
+  "krs.csv":{cols:["id_krs","nim","kode_mk","semester","tahun_akademik","status"],pk:"id_krs"},
+  "nilai.csv":{cols:["id_nilai","nim","kode_mk","nilai_angka","nilai_huruf","semester","tahun_akademik"],pk:"id_nilai"},
+  "kehadiran.csv":{cols:["event_id","nim","kode_mk","waktu_event","status_hadir"],pk:"event_id"},
+};
+let uploadedFiles={},pipelineResults={},pipelineLog=[],loadedTables={},logId=0;
+function nli(){return ++logId;}
+function fd(d){return new Date(d).toLocaleString("id-ID",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+function toast(m,e=false){const t=document.getElementById("toast");document.getElementById("tm").textContent=m;document.getElementById("ti").textContent=e?"❌":"✅";t.classList.toggle("err",e);t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);}
+function initSchema(){
+  document.getElementById("schema-disp").innerHTML=Object.entries(SCHEMA).map(([fn,s])=>
+    `<div class="scard"><div class="scard-t">${fn}</div>${s.cols.map(c=>`<div class="scol">• ${c}${c===s.pk?' <span style="font-size:.62rem;background:var(--b100);color:var(--b700);padding:1px 5px;border-radius:4px;">PK</span>':''}</div>`).join("")}</div>`
+  ).join("");
+}
+function initSlots(){
+  document.getElementById("fslots").innerHTML=Object.keys(SCHEMA).map(fn=>{
+    const id="fi_"+fn.replace(".","_"),sid="slot_"+fn.replace(".","_"),fsid="fs_"+fn.replace(".","_");
+    return `<div class="fslot" id="${sid}" onclick="document.getElementById('${id}').click()">
+      <input type="file" id="${id}" accept=".csv" onchange="handleFile(event,'${fn}')">
+      <div class="fn-name">📄 ${fn}</div><div class="fn-st" id="${fsid}">Klik untuk upload</div></div>`;
+  }).join("");
+}
+function handleFile(e,fn){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    uploadedFiles[fn]=ev.target.result;
+    document.getElementById("slot_"+fn.replace(".","_")).classList.add("loaded");
+    document.getElementById("fs_"+fn.replace(".","_")).textContent="✓ "+f.name+" ("+Math.round(f.size/1024)+" KB)";
+    document.getElementById("uc-num").textContent=Object.keys(uploadedFiles).length;
+    document.getElementById("run-btn").disabled=false;
+    toast(fn+" berhasil diupload");
+  };r.readAsText(f);
+}
+function parseCSV(txt){
+  const lines=txt.trim().split("\n");
+  const hdr=lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
+  const rows=lines.slice(1).map(l=>{const v=l.split(",").map(x=>x.trim().replace(/"/g,""));const o={};hdr.forEach((h,i)=>o[h]=v[i]||null);return o;}).filter(r=>Object.values(r).some(v=>v&&v.trim()));
+  return{headers:hdr,rows};
+}
+function validate(data,fn){
+  const s=SCHEMA[fn]||{cols:[],pk:null};const issues=[],warnings=[];
+  const mc=s.cols.filter(c=>!data.headers.includes(c));
+  if(mc.length)issues.push("Kolom wajib tidak ada: "+mc.join(", "));
+  s.cols.forEach(col=>{if(!data.headers.includes(col))return;const mv=data.rows.filter(r=>!r[col]||!r[col].trim()).length;if(mv)warnings.push("Missing value '"+col+"': "+mv+" baris");});
+  if(s.pk&&data.headers.includes(s.pk)){const v=data.rows.map(r=>r[s.pk]);const dup=v.length-new Set(v).size;if(dup)issues.push("Duplikat PK '"+s.pk+"': "+dup+" baris");}
+  return{issues,warnings};
+}
+function transform(data,fn){
+  const notes=[];let rows=[...data.rows];
+  rows=rows.map(r=>{const n={};Object.entries(r).forEach(([k,v])=>{n[k]=typeof v==="string"?v.trim():v;});return n;});
+  if(fn==="nilai.csv"){const b=rows.length;rows=rows.filter(r=>r.nilai_angka&&!isNaN(parseFloat(r.nilai_angka)));rows.forEach(r=>r.nilai_angka=parseFloat(r.nilai_angka));if(b-rows.length)notes.push("Hapus "+(b-rows.length)+" baris nilai tidak valid");}
+  if(fn==="mahasiswa.csv"){rows=rows.map(r=>({...r,email:r.email?r.email.toLowerCase():r.email}));notes.push("Email di-lowercase");}
+  if(fn==="kehadiran.csv"){rows=rows.map(r=>({...r,status_hadir:r.status_hadir?r.status_hadir.toLowerCase():r.status_hadir}));notes.push("status_hadir dinormalisasi");}
+  const b=rows.length;const seen=new Set();rows=rows.filter(r=>{const k=JSON.stringify(r);if(seen.has(k))return false;seen.add(k);return true;});
+  if(b-rows.length)notes.push("Hapus "+(b-rows.length)+" duplikat");
+  notes.push(rows.length+" baris bersih tersisa");return{rows,notes};
+}
+function addLog(fn,tahap,status,pesan,n=0){pipelineLog.push({log_id:nli(),filename:fn,tahap,status,pesan,jumlah_baris:n,ts:new Date().toISOString()});}
+function runPipeline(){
+  if(!Object.keys(uploadedFiles).length){toast("Upload minimal 1 file",true);return;}
+  pipelineResults={};pipelineLog=[];loadedTables={};logId=0;
+  const btn=document.getElementById("run-btn");btn.textContent="⏳ Memproses...";btn.disabled=true;
+  setTimeout(()=>{
+    Object.entries(uploadedFiles).forEach(([fn,txt])=>{
+      const r={fn,issues:[],warnings:[],notes:[],status:"",rows:0};
+      try{
+        const data=parseCSV(txt);addLog(fn,"ingest","success","Dibaca "+data.rows.length+" baris",data.rows.length);
+        const{issues,warnings}=validate(data,fn);r.issues=issues;r.warnings=warnings;
+        if(issues.length){r.status="failed";addLog(fn,"validasi","failed",issues.join(" | "),data.rows.length);}
+        else if(warnings.length){r.status="warning";addLog(fn,"validasi","warning",warnings.join(" | "),data.rows.length);}
+        else{r.status="success";addLog(fn,"validasi","success","Semua validasi lulus",data.rows.length);}
+        if(r.status!=="failed"){
+          const{rows,notes}=transform(data,fn);r.notes=notes;r.rows=rows.length;
+          addLog(fn,"transformasi","success",notes.join(" | "),rows.length);
+          const tbl=fn.replace(".csv","");loadedTables[tbl]={headers:Object.keys(rows[0]||{}),rows};
+          addLog(fn,"load","success","Dimuat ke '"+tbl+"'",rows.length);
+        }
+      }catch(e){r.status="failed";r.issues=[e.message];addLog(fn,"error","failed",e.message,0);}
+      pipelineResults[fn]=r;
+    });
+    renderResults();btn.textContent="▶️ Jalankan Pipeline";btn.disabled=false;toast("Pipeline selesai!");
+  },350);
+}
+function renderResults(){
+  const res=Object.values(pipelineResults);
+  const nOk=res.filter(r=>r.status==="success").length,nWn=res.filter(r=>r.status==="warning").length,nFl=res.filter(r=>r.status==="failed").length,nRw=res.reduce((s,r)=>s+r.rows,0);
+  document.getElementById("m-ok").textContent=nOk;document.getElementById("m-wn").textContent=nWn;
+  document.getElementById("m-fl").textContent=nFl;document.getElementById("m-rw").textContent=nRw;
+  document.getElementById("mgrid").style.display="grid";
+  document.getElementById("empty-card").style.display="none";
+  document.getElementById("res-section").style.display="block";
+  document.getElementById("pipe-ts").textContent=fd(new Date());
+  document.getElementById("file-res").innerHTML=Object.entries(pipelineResults).map(([fn,r])=>{
+    const s=r.status,ic=s==="success"?"✅":s==="warning"?"⚠️":"❌",lb=s.toUpperCase();
+    return `<div class="fr"><div class="frh ${s}" onclick="toggleFR(this)">
+      <span class="fr-icon">${ic}</span><span class="frn">${fn}</span>
+      <span class="frm">${r.rows} baris · tbl:${fn.replace(".csv","")}</span>
+      <span class="frbadge ${s}">${lb}</span><span style="color:var(--gray300);margin-left:4px;">▾</span>
+    </div>
+    <div class="frb">
+      <div>${r.issues.length?`<b style="color:var(--r700);font-size:.8rem;">❌ Error:</b><ul style="list-style:none;margin-top:4px;">${r.issues.map(i=>`<li style="font-size:.78rem;padding:2px 0;">• ${i}</li>`).join("")}</ul>`:""
+      }${r.warnings.length?`<b style="color:var(--a700);font-size:.8rem;">⚠️ Peringatan:</b><ul style="list-style:none;margin-top:4px;">${r.warnings.map(w=>`<li style="font-size:.78rem;padding:2px 0;">• ${w}</li>`).join("")}</ul>`:""
+      }${!r.issues.length&&!r.warnings.length?`<span style="color:var(--g700);font-size:.8rem;">✅ Semua validasi lulus</span>`:""}</div>
+      <div>${r.notes.length?`<b style="color:var(--b700);font-size:.8rem;">⚙️ Transformasi:</b><ul style="list-style:none;margin-top:4px;">${r.notes.map(n=>`<li style="font-size:.78rem;padding:2px 0;">• ${n}</li>`).join("")}</ul>`:""
+      }${r.rows?`<div style="color:var(--g700);font-size:.78rem;margin-top:.3rem;">💾 Tabel: <code>${fn.replace(".csv","")}</code> (${r.rows} baris)</div>`:""}</div>
+    </div></div>`;
+  }).join("");
+  document.getElementById("log-badge").textContent=pipelineLog.length+" record";
+  document.getElementById("log-tbody").innerHTML=pipelineLog.slice().reverse().map(l=>`<tr>
+    <td class="mono">${l.log_id}</td><td>${l.filename}</td><td>${l.tahap}</td>
+    <td><span class="badge ${l.status==="success"?"bok":l.status==="warning"?"bwn":"bfl"}">${l.status}</span></td>
+    <td style="max-width:200px;font-size:.74rem;">${l.pesan}</td>
+    <td class="mono">${l.jumlah_baris}</td><td class="mono" style="font-size:.7rem;">${fd(l.ts)}</td>
+  </tr>`).join("");
+  const firstTbl=Object.keys(loadedTables)[0];
+  document.getElementById("tbl-tabs").innerHTML=Object.keys(loadedTables).map(t=>`<button onclick="renderPreview('${t}')" id="tab-${t}" style="padding:.38rem .85rem;border-radius:7px;border:1px solid var(--gray200);background:var(--gray50);font-size:.76rem;font-weight:600;cursor:pointer;">${t}</button>`).join("");
+  if(firstTbl)renderPreview(firstTbl);
+  document.getElementById("sb-log").textContent=pipelineLog.length;
+  document.getElementById("sb-tbl").textContent=Object.keys(loadedTables).length;
+  document.getElementById("sb-rows").textContent=nRw;
+  renderChecklist();
+}
+function renderPreview(tbl){
+  if(!loadedTables[tbl])return;
+  const{headers:h,rows:r}=loadedTables[tbl];
+  document.getElementById("ph").innerHTML="<tr>"+h.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+  document.getElementById("pb").innerHTML=r.slice(0,20).map(row=>`<tr>${h.map(c=>`<td>${row[c]??""}</td>`).join("")}</tr>`).join("");
+  document.getElementById("pc").textContent="Menampilkan "+Math.min(20,r.length)+" dari "+r.length+" baris di tabel '"+tbl+"'";
+  document.querySelectorAll("#tbl-tabs button").forEach(b=>{const a=b.id==="tab-"+tbl;b.style.cssText=a?"background:var(--g600);color:white;border-color:var(--g600);":"background:var(--gray50);color:var(--gray700);border-color:var(--gray200);";});
+}
+function toggleFR(h){h.nextElementSibling.classList.toggle("open");}
+function renderChecklist(){
+  const hp=Object.keys(pipelineResults).length>0;
+  const checks=[["6 CSV di folder data",true,"Ada · 6 file"],["Kode pipeline berjalan",true,"Ada · app.py"],
+    ["Validasi kolom wajib",hp,hp?"Berjalan":"Belum"],["Data salah → warning/error",hp,hp?"Terdeteksi":"Belum"],
+    ["Data valid masuk database",hp,hp?"Dimuat (simulasi)":"Belum"],["pipeline_log terisi",hp,hp?pipelineLog.length+" record":"Belum"],
+    ["Screenshot upload & status",false,"Perlu manual"],["Diagram pipeline",true,"Ada · tampil"],
+    ["Laporan 1–2 halaman",false,"Perlu manual"],["AI Usage Log",true,"Ada · .csv"]];
+  document.getElementById("cl-body").innerHTML=checks.map(([l,ok,n])=>`<div class="cli"><span>${ok?"✅":"⚠️"}</span><span class="cl-l">${l}</span><span class="cl-s ${ok?"clo":"cln"}">${n}</span></div>`).join("");
+}
+function resetAll(){
+  if(!confirm("Reset semua?"))return;
+  uploadedFiles={};pipelineResults={};pipelineLog=[];loadedTables={};logId=0;
+  document.getElementById("uc-num").textContent="0";
+  document.getElementById("run-btn").disabled=true;
+  document.getElementById("mgrid").style.display="none";
+  document.getElementById("empty-card").style.display="block";
+  document.getElementById("res-section").style.display="none";
+  document.getElementById("sb-log").textContent="0";document.getElementById("sb-tbl").textContent="0";document.getElementById("sb-rows").textContent="0";
+  initSlots();toast("Semua data direset");
+}
+function exportLog(){
+  if(!pipelineLog.length){toast("Belum ada log",true);return;}
+  const csv=["log_id,filename,tahap,status,pesan,jumlah_baris,ts",...pipelineLog.map(l=>`${l.log_id},${l.filename},${l.tahap},${l.status},"${l.pesan}",${l.jumlah_baris},${l.ts}`)].join("\n");
+  const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);
+  a.download="pipeline_log_"+new Date().toISOString().slice(0,10)+".csv";a.click();toast("pipeline_log.csv diunduh");
+}
+initSchema();initSlots();
+</script>
+</body>
+</html>

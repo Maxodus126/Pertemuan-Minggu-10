@@ -1,0 +1,16 @@
+flowchart LR
+    A[📂 Upload CSV] --> B{🔍 Validasi}
+    B -->|Kolom wajib OK| C[⚙️ Transformasi]
+    B -->|Kolom hilang| F[❌ FAILED]
+    B -->|Missing value| W[⚠️ WARNING]
+    W --> C
+    C --> D[💾 Load DuckDB]
+    D --> E[📋 pipeline_log]
+    F --> E
+    style A fill:#DBEAFE,stroke:#3B82F6
+    style B fill:#FEF3C7,stroke:#F59E0B
+    style C fill:#D1FAE5,stroke:#10B981
+    style D fill:#EDE9FE,stroke:#8B5CF6
+    style E fill:#FCE7F3,stroke:#EC4899
+    style F fill:#FEE2E2,stroke:#EF4444
+    style W fill:#FEF3C7,stroke:#F59E0B
